@@ -781,7 +781,7 @@ where
 
         let mut physics = physics;
 
-        let world = physics.0.create();
+        let world = physics.0.create_world();
 
         self.world.add_resource(physics.0);
         self.world.add_resource(physics.1);
