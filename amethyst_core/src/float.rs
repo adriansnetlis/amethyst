@@ -66,6 +66,19 @@ impl From<f64> for Float {
     }
 }
 
+// Note: I've implemented this otherwise is impossible convert from and to easily
+impl From<Float> for f32 {
+    fn from(val: Float) -> Self {
+        val.as_f32()
+    }
+}
+
+impl From<Float> for f64 {
+    fn from(val: Float) -> Self{
+        val.as_f64()
+    }
+}
+
 impl FromPrimitive for Float {
     fn from_i64(n: i64) -> Option<Self> {
         Some(Float(n as FloatBase))
