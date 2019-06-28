@@ -27,10 +27,10 @@ use crate::{
     },
     error::Error,
     game_data::{DataDispose, DataInit},
+    phythyst::{servers::PhysicsServers, PhysicsTime},
     state::{State, StateData, StateMachine, TransEvent},
     state_event::{StateEvent, StateEventReader},
     ui::UiEvent,
-    phythyst::{servers::PhysicsServers, PhysicsTime,},
 };
 
 /// `CoreApplication` is the application implementation for the game engine. This is fully generic
@@ -778,10 +778,14 @@ where
     }
 
     /// Sets all
-    pub fn with_physics<N: crate::core::math::RealField>(mut self, physics: PhysicsServers<N>) -> Self {
-
-        self.world.register::<amethyst_phythyst::objects::PhysicsWorldTag>();
-        self.world.register::<amethyst_phythyst::objects::PhysicsBodyTag>();
+    pub fn with_physics<N: crate::core::math::RealField>(
+        mut self,
+        physics: PhysicsServers<N>,
+    ) -> Self {
+        self.world
+            .register::<amethyst_phythyst::objects::PhysicsWorldTag>();
+        self.world
+            .register::<amethyst_phythyst::objects::PhysicsBodyTag>();
 
         let mut physics = physics;
 
