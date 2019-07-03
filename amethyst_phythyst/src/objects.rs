@@ -1,4 +1,4 @@
-use amethyst_core::ecs::{Component, DenseVecStorage};
+use amethyst_core::ecs::{Component, DenseVecStorage, FlaggedStorage};
 
 macro_rules! define_opaque_object{
     ($what:ident, $doc_name:ident) => {
@@ -15,7 +15,7 @@ macro_rules! define_opaque_object{
         }
 
         impl Component for $what {
-            type Storage = DenseVecStorage<$what>;
+            type Storage = FlaggedStorage<$what, DenseVecStorage<$what>>;
         }
 
         impl std::ops::Deref for $what {

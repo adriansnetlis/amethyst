@@ -5,12 +5,11 @@ use amethyst_core::{
 };
 
 pub struct PhysicsSyncTransformSystem {
-    c: i32,
 }
 
 impl PhysicsSyncTransformSystem {
-    pub fn new() -> PhysicsSyncTransformSystem {
-        PhysicsSyncTransformSystem { c: 0 }
+    pub fn new() -> PhysicsSyncTransformSystem{
+        PhysicsSyncTransformSystem {  }
     }
 }
 
