@@ -2,11 +2,11 @@
 
 pub use crate::{
     objects::{
-        PhysicsAreaTag, PhysicsBodyTag, PhysicsGarbageCollector, PhysicsHandle, PhysicsShapeTag,
+        PhysicsAreaTag, PhysicsRigidBodyTag, PhysicsGarbageCollector, PhysicsHandle, PhysicsShapeTag,
         PhysicsTag,
     },
     servers::{
-        AreaDesc, AreaPhysicsServerTrait, PhysicsWorld, RBodyPhysicsServerTrait, BodyMode, RigidBodyDesc,
-        ShapeDesc, ShapePhysicsServerTrait, WorldPhysicsServerTrait,
+        AreaDesc, AreaPhysicsServerTrait, BodyMode, PhysicsWorld, RBodyPhysicsServerTrait,
+        RigidBodyDesc, ShapeDesc, ShapePhysicsServerTrait, WorldPhysicsServerTrait,
     },
 };

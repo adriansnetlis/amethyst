@@ -36,6 +36,6 @@ pub struct AreaDesc {
 
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum OverlapEvent {
-    Enter(PhysicsBodyTag, Option<Entity>),
-    Exit(PhysicsBodyTag, Option<Entity>),
+    Enter(PhysicsRigidBodyTag, Option<Entity>),
+    Exit(PhysicsRigidBodyTag, Option<Entity>),
 }

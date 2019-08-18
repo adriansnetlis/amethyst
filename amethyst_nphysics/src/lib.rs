@@ -52,12 +52,7 @@ use rigid_body_physics_server::RBodyNpServer;
 use shape_physics_server::ShapeNpServer;
 use world_physics_server::WorldNpServer;
 
-use amethyst_phythyst::{
-    servers::{
-        AreaPhysicsServerTrait, PhysicsWorld, RBodyPhysicsServerTrait, ShapePhysicsServerTrait,
-    },
-    PtReal,
-};
+use amethyst_phythyst::{servers::PhysicsWorld, PtReal};
 
 pub struct NPhysicsBackend;
 

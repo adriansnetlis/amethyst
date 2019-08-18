@@ -14,75 +14,75 @@ pub trait RBodyPhysicsServerTrait<N: crate::PtReal> {
     /// Create a Rigid Body and return its handle.
     /// The PhysicsHandle returned can be safely cloned.
     /// When all instances of this Handle are dropped the Body is Dropped automatically.
-    fn create_body(&self, body_desc: &RigidBodyDesc<N>) -> PhysicsHandle<PhysicsBodyTag>;
+    fn create_body(&self, body_desc: &RigidBodyDesc<N>) -> PhysicsHandle<PhysicsRigidBodyTag>;
 
     /// Set the entity which holds this body.
-    fn set_entity(&self, body_tag: PhysicsBodyTag, index: Option<Entity>);
+    fn set_entity(&self, body_tag: PhysicsRigidBodyTag, index: Option<Entity>);
 
     /// Get the entity which holds this body.
     /// This returns Some only if the entity was associated during its creation.
     ///
     /// All the physical APIs events returns the PhysicalTag, using this function
     /// is possible to retrieve the Entity index and perform some operation in SPECS style.
-    fn entity(&self, body_tag: PhysicsBodyTag) -> Option<Entity>;
+    fn entity(&self, body_tag: PhysicsRigidBodyTag) -> Option<Entity>;
 
     /// Set the rigid shape of the body.
     /// Passing None, will leave the RigidBody without any shape.
     ///
     /// You can create a shape, using the function `ShapeServer::create_shape`.
-    fn set_shape(&self, body_tag: PhysicsBodyTag, shape_tag: Option<PhysicsShapeTag>);
+    fn set_shape(&self, body_tag: PhysicsRigidBodyTag, shape_tag: Option<PhysicsShapeTag>);
 
     /// Get the shape of the body
-    fn shape(&self, body_tag: PhysicsBodyTag) -> Option<PhysicsShapeTag>;
+    fn shape(&self, body_tag: PhysicsRigidBodyTag) -> Option<PhysicsShapeTag>;
 
     /// Set the transformation of the body
-    fn set_body_transform(&self, body: PhysicsBodyTag, transf: &Isometry3<f32>);
+    fn set_body_transform(&self, body: PhysicsRigidBodyTag, transf: &Isometry3<f32>);
 
     /// Get the actual transformation of the body
-    fn body_transform(&self, body_tag: PhysicsBodyTag) -> Isometry3<f32>;
+    fn body_transform(&self, body_tag: PhysicsRigidBodyTag) -> Isometry3<f32>;
 
     /// Clear forces
-    fn clear_forces(&self, body: PhysicsBodyTag);
+    fn clear_forces(&self, body: PhysicsRigidBodyTag);
 
     /// Apply a central force to the body
-    fn apply_force(&self, body: PhysicsBodyTag, force: &Vector3<N>);
+    fn apply_force(&self, body: PhysicsRigidBodyTag, force: &Vector3<N>);
 
     /// Apply central angular force to the body
-    fn apply_torque(&self, body: PhysicsBodyTag, force: &Vector3<N>);
+    fn apply_torque(&self, body: PhysicsRigidBodyTag, force: &Vector3<N>);
 
     /// Apply force at position to the body
     fn apply_force_at_position(
         &self,
-        body: PhysicsBodyTag,
+        body: PhysicsRigidBodyTag,
         force: &Vector3<N>,
         position: &Vector3<N>,
     );
 
     /// Apply central impulse to the body
-    fn apply_impulse(&self, body: PhysicsBodyTag, impulse: &Vector3<N>);
+    fn apply_impulse(&self, body: PhysicsRigidBodyTag, impulse: &Vector3<N>);
 
     /// Apply central angulat impulse to the body
-    fn apply_angular_impulse(&self, body: PhysicsBodyTag, impulse: &Vector3<N>);
+    fn apply_angular_impulse(&self, body: PhysicsRigidBodyTag, impulse: &Vector3<N>);
 
     /// Apply impulse at position to the body
     fn apply_impulse_at_position(
         &self,
-        body: PhysicsBodyTag,
+        body: PhysicsRigidBodyTag,
         impulse: &Vector3<N>,
         position: &Vector3<N>,
     );
 
     /// Set the velocity of the body
-    fn set_linear_velocity(&self, body: PhysicsBodyTag, velocity: &Vector3<N>);
+    fn set_linear_velocity(&self, body: PhysicsRigidBodyTag, velocity: &Vector3<N>);
 
     /// Get the velocity of the body
-    fn linear_velocity(&self, body: PhysicsBodyTag) -> Vector3<N>;
+    fn linear_velocity(&self, body: PhysicsRigidBodyTag) -> Vector3<N>;
 
     /// Set the angular velocity of the body
-    fn set_angular_velocity(&self, body: PhysicsBodyTag, velocity: &Vector3<N>);
+    fn set_angular_velocity(&self, body: PhysicsRigidBodyTag, velocity: &Vector3<N>);
 
     /// Get the angular velocity of the body
-    fn angular_velocity(&self, body: PhysicsBodyTag) -> Vector3<N>;
+    fn angular_velocity(&self, body: PhysicsRigidBodyTag) -> Vector3<N>;
 }
 
 /// This structure holds all information about the Rigid body before it is created.

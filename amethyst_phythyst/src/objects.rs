@@ -3,22 +3,44 @@ use std::sync::{Arc, RwLock};
 use amethyst_core::ecs::{Component, DenseVecStorage, FlaggedStorage};
 
 macro_rules! define_opaque_object {
-    ($what:ident, $doc_name:ident, $gc_name:ident) => {
-        /// $what is the opaque ID that identify a `$doc_name` in the physics server
+    ($what:ident, $gc_name:ident) => {
+        /// This is an opaque ID that is created by a physics server.
+        /// Create this Opaque ID manually is not safe, for this reason is marked as so.
         #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-        pub struct $what(pub std::num::NonZeroU64);
+        pub enum $what {
+            U32(u32),
+            U64(u64),
 
-        /// Panic if called
-        impl Default for $what {
-            fn default() -> Self {
-                panic!();
-            }
+            U32U32(u32, u32),
+            U64U64(u64, u64),
+
+            UsizeU32(usize, u32),
+            UsizeU64(usize, u64),
         }
 
-        impl std::ops::Deref for $what {
-            type Target = std::num::NonZeroU64;
-            fn deref(&self) -> &std::num::NonZeroU64 {
-                &self.0
+        impl $what {
+            pub unsafe fn new_u32(a: u32) -> Self {
+                Self::U32(a)
+            }
+
+            pub unsafe fn new_u64(a: u64) -> Self {
+                Self::U64(a)
+            }
+
+            pub unsafe fn new_u32u32(a: u32, b: u32) -> Self {
+                Self::U32U32(a, b)
+            }
+
+            pub unsafe fn new_u64u64(a: u64, b: u64) -> Self {
+                Self::U64U64(a, b)
+            }
+
+            pub unsafe fn new_usizeu32(a: usize, b: u32) -> Self {
+                Self::UsizeU32(a, b)
+            }
+
+            pub unsafe fn new_usizeu64(a: usize, b: u64) -> Self {
+                Self::UsizeU64(a, b)
             }
         }
 
@@ -27,21 +49,15 @@ macro_rules! define_opaque_object {
                 gc.$gc_name.push(*self);
             }
         }
-
-        impl std::fmt::Display for $what {
-            fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-                write!(f, "$what({})", self.0)
-            }
-        }
     };
 }
 
-define_opaque_object!(PhysicsBodyTag, Rigid_Body, bodies);
-define_opaque_object!(PhysicsAreaTag, Area, areas);
-define_opaque_object!(PhysicsShapeTag, Shape, shapes);
+define_opaque_object!(PhysicsRigidBodyTag, bodies);
+define_opaque_object!(PhysicsAreaTag, areas);
+define_opaque_object!(PhysicsShapeTag, shapes);
 
 /// This trait must be implemented for each structure that want to use the PhysicsHandle.
-pub trait PhysicsTag: Copy + std::fmt::Display + Sync + Send + Sized + 'static {
+pub trait PhysicsTag: Copy + std::fmt::Debug + Sync + Send + Sized + 'static {
     fn request_resource_removal(&mut self, gc: &mut PhysicsGarbageCollector);
 }
 
@@ -82,7 +98,7 @@ impl<T: PhysicsTag> std::fmt::Debug for PhysicsHandle<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(
             f,
-            "PhysicsHandle{{\n   tag = {}\n   owner = {}\n   weak = {}\n}};",
+            "PhysicsHandle{{\n   tag = {:?}\n   owner = {}\n   weak = {}\n}};",
             self.get(),
             Arc::strong_count(&self.tag_container),
             Arc::weak_count(&self.tag_container)
@@ -141,7 +157,7 @@ impl<T: PhysicsTag> std::ops::Drop for PhysicsTagContainer<T> {
 ///
 /// Considering the above the GC seems a better way.
 pub struct PhysicsGarbageCollector {
-    pub bodies: Vec<PhysicsBodyTag>,
+    pub bodies: Vec<PhysicsRigidBodyTag>,
     pub areas: Vec<PhysicsAreaTag>,
     pub shapes: Vec<PhysicsShapeTag>,
 }

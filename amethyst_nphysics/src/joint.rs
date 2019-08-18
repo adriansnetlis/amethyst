@@ -1,4 +1,3 @@
-use amethyst_core::ecs::Entity;
 use amethyst_phythyst::PtReal;
 use nphysics3d::{joint::JointConstraint as NpJointConstraint, object::BodySet as NpBodySet};
 

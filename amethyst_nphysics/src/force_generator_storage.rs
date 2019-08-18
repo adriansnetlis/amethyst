@@ -1,9 +1,9 @@
-use amethyst_phythyst::{objects::PhysicsBodyTag, PtReal};
+use amethyst_phythyst::PtReal;
 use nphysics3d::{
     force_generator::{
         ForceGenerator as NpForceGenerator, ForceGeneratorSet as NpForceGeneratorSet,
     },
-    object::{BodyPartHandle as NpBodyPartHandle, BodySet as NpBodySet},
+    object::BodySet as NpBodySet,
 };
 
 use crate::{

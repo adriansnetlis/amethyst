@@ -1,4 +1,4 @@
-use amethyst_phythyst::{objects::PhysicsBodyTag, PtReal};
+use amethyst_phythyst::{objects::PhysicsRigidBodyTag, PtReal};
 use generational_arena::{Iter, IterMut};
 use nphysics3d::object::{Body as NpBody, BodySet};
 

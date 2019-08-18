@@ -1,4 +1,4 @@
-use amethyst_phythyst::{objects::PhysicsBodyTag, PtReal};
+use amethyst_phythyst::{objects::PhysicsRigidBodyTag, PtReal};
 use ncollide3d::pipeline::object::CollisionObjectSet as NpCollisionObjectSet;
 use nphysics3d::object::{
     BodyHandle as NpBodyHandle, Collider as NpCollider,

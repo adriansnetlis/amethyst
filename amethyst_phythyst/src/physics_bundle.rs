@@ -264,7 +264,7 @@ impl<'a, 'b, N: crate::PtReal, B: crate::PhysicsBackend<N>> PhysicsBundle<'a, 'b
 
 /// This is used only to perform the setup of these storages.
 type PhysicsSetupStorages<'a> = (
-    ReadStorage<'a, PhysicsHandle<PhysicsBodyTag>>,
+    ReadStorage<'a, PhysicsHandle<PhysicsRigidBodyTag>>,
     ReadStorage<'a, PhysicsHandle<PhysicsAreaTag>>,
     ReadStorage<'a, PhysicsHandle<PhysicsShapeTag>>,
 );

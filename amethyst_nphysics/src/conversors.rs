@@ -2,6 +2,7 @@ use amethyst_core::{
     components::Transform,
     math::{Quaternion, Translation3, UnitQuaternion, Vector3, Vector4},
 };
+use amethyst_phythyst::objects::{PhysicsAreaTag, PhysicsRigidBodyTag, PhysicsShapeTag};
 use nalgebra::{Isometry3, Transform3};
 
 use crate::storage::StoreKey;
@@ -97,31 +98,51 @@ pub mod body_mode_conversor {
     }
 }
 
-// TODO think a better way to have an opaque that is the same with all backends
-// bug give the possibility to each backend to easily convert itw IDS to the phythyst opaque ID.
-/// ```rust
-/// use crate::amethyst_nphysics::storage::StoreKey;
-/// use crate::amethyst_nphysics::conversors::*;
-/// let sk = StoreKey::new(0, 0);
-/// assert_eq!(tag_to_store_key(std::num::NonZeroU64::new(1).unwrap()), sk);
-/// ```
-pub fn tag_to_store_key(tag: std::num::NonZeroU64) -> StoreKey {
-    let opaque = tag.get() - 1;
-    let index = (opaque & 0xffff_ffff) as usize;
-    let generation = opaque >> 32;
-    StoreKey::new(index, generation)
+macro_rules! opaque_conversors {
+    ($t:ident, $to:ident, $from:ident, $test_mod:ident) => {
+        pub fn $to(tag: $t) -> StoreKey {
+            match tag {
+                $t::UsizeU64(a, b) => StoreKey::new(a, b),
+                _ => {
+                    // If happens, something is strange
+                    panic!();
+                }
+            }
+        }
+
+        pub fn $from(key: StoreKey) -> $t {
+            unsafe { key.map(|index, generation| $t::new_usizeu64(index, generation)) }
+        }
+
+        #[cfg(test)]
+        mod $test_mod {
+            use crate::conversors::*;
+
+            #[test]
+            fn test() {
+                let tag = unsafe { $t::new_usizeu64(1, 10) };
+                let key = $to(tag);
+                assert_eq!(tag, $from(key));
+            }
+        }
+    };
 }
 
-// TODO think a better way to have an opaque that is the same with all backends
-// bug give the possibility to each backend to easily convert itw IDS to the phythyst opaque ID.
-/// ```rust
-/// use crate::amethyst_nphysics::storage::StoreKey;
-/// use crate::amethyst_nphysics::conversors::*;
-/// let sk = StoreKey::new(0, 0);
-/// assert_eq!(std::num::NonZeroU64::new(1).unwrap(), store_key_to_tag(sk));
-/// ```
-pub fn store_key_to_tag(key: StoreKey) -> std::num::NonZeroU64 {
-    key.map(|index, generation| {
-        std::num::NonZeroU64::new((generation << 32 | (index as u64)) + 1).unwrap()
-    })
-}
+opaque_conversors!(
+    PhysicsRigidBodyTag,
+    rigid_tag_to_store_key,
+    store_key_to_rigid_tag,
+    test_conversors_physics_rigid_body_tag
+);
+opaque_conversors!(
+    PhysicsAreaTag,
+    area_tag_to_store_key,
+    store_key_to_area_tag,
+    test_conversors_physics_area_tag
+);
+opaque_conversors!(
+    PhysicsShapeTag,
+    shape_tag_to_store_key,
+    store_key_to_shape_tag,
+    test_conversors_physics_shape_tag
+);

@@ -1,4 +1,4 @@
-use amethyst_phythyst::{objects::PhysicsBodyTag, PtReal};
+use amethyst_phythyst::PtReal;
 use nphysics3d::{
     joint::{JointConstraint as NpJointConstraint, JointConstraintSet as NpJointConstraintSet},
     object::{BodyPartHandle as NpBodyPartHandle, BodySet as NpBodySet},

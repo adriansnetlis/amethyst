@@ -1,14 +1,11 @@
 use amethyst_core::ecs::Entity;
 use amethyst_phythyst::{objects::*, servers::*, PtReal};
 use log::error;
-use nalgebra::{Isometry3, Point, Vector, Vector3};
-use ncollide3d::shape::{Ball as NcBall, ShapeHandle as NcShapeHandle};
+use nalgebra::{Isometry3, Point, Vector3};
 use nphysics3d::{
-    algebra::Velocity3,
-    math::{Force, ForceType, Velocity},
+    math::{Force, ForceType},
     object::{
-        Body as NpBody, BodyHandle as NpBodyHandle, BodyPartHandle as NpBodyPartHandle,
-        BodyStatus as NpBodyStatus, Collider as NpCollider, ColliderDesc as NpColliderDesc,
+        BodyPartHandle as NpBodyPartHandle, Collider as NpCollider, ColliderDesc as NpColliderDesc,
         RigidBody as NpRigidBody, RigidBodyDesc as NpRigidBodyDesc,
     },
 };
@@ -36,12 +33,12 @@ impl<N: PtReal> RBodyNpServer<N> {
 // operations on areas.
 impl<N: PtReal> RBodyNpServer<N> {
     pub fn drop_body(
-        body_tag: PhysicsBodyTag,
+        body_tag: PhysicsRigidBodyTag,
         bodies_storage: &mut BodiesStorageWrite<N>,
         colliders_storage: &mut CollidersStorageWrite<N>,
         shapes_storage: &mut ShapesStorageWrite<N>,
     ) {
-        let body_key = tag_to_store_key(body_tag.0);
+        let body_key = rigid_tag_to_store_key(body_tag);
         if let Some(body) = bodies_storage.get_body_mut(body_key) {
             Self::remove_shape(body, shapes_storage, colliders_storage);
         }
@@ -129,7 +126,7 @@ impl<N> RBodyPhysicsServerTrait<N> for RBodyNpServer<N>
 where
     N: PtReal,
 {
-    fn create_body(&self, body_desc: &RigidBodyDesc<N>) -> PhysicsHandle<PhysicsBodyTag> {
+    fn create_body(&self, body_desc: &RigidBodyDesc<N>) -> PhysicsHandle<PhysicsRigidBodyTag> {
         let mut bodies_storage = self.storages.bodies_w();
         let mut colliders = self.storages.colliders_w();
         let mut shape_storage = self.storages.shapes_w();
@@ -145,14 +142,11 @@ where
         let body = bodies_storage.get_body_mut(b_key).unwrap();
         body.self_key = Some(b_key);
 
-        PhysicsHandle::new(
-            PhysicsBodyTag(store_key_to_tag(b_key)),
-            self.storages.gc.clone(),
-        )
+        PhysicsHandle::new(store_key_to_rigid_tag(b_key), self.storages.gc.clone())
     }
 
-    fn set_entity(&self, body_tag: PhysicsBodyTag, entity: Option<Entity>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn set_entity(&self, body_tag: PhysicsRigidBodyTag, entity: Option<Entity>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -170,8 +164,8 @@ where
         }
     }
 
-    fn entity(&self, body_tag: PhysicsBodyTag) -> Option<Entity> {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn entity(&self, body_tag: PhysicsRigidBodyTag) -> Option<Entity> {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_r();
 
         if let Some(body) = bodies.get_body(body_key) {
@@ -181,11 +175,11 @@ where
         }
     }
 
-    fn set_shape(&self, body_tag: PhysicsBodyTag, shape_tag: Option<PhysicsShapeTag>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn set_shape(&self, body_tag: PhysicsRigidBodyTag, shape_tag: Option<PhysicsShapeTag>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
-        let shape_key = shape_tag.map(|tag| tag_to_store_key(tag.0));
+        let shape_key = shape_tag.map(|tag| shape_tag_to_store_key(tag));
 
         if let Some(body) = bodies.get_body_mut(body_key) {
             if body.shape_key == shape_key {
@@ -217,20 +211,19 @@ where
         }
     }
 
-    fn shape(&self, body_tag: PhysicsBodyTag) -> Option<PhysicsShapeTag> {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn shape(&self, body_tag: PhysicsRigidBodyTag) -> Option<PhysicsShapeTag> {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_r();
 
         if let Some(body) = bodies.get_body(body_key) {
-            body.shape_key
-                .map(|key| PhysicsShapeTag(store_key_to_tag(key)))
+            body.shape_key.map(|key| store_key_to_shape_tag(key))
         } else {
             None
         }
     }
 
-    fn set_body_transform(&self, body_tag: PhysicsBodyTag, transf: &Isometry3<f32>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn set_body_transform(&self, body_tag: PhysicsRigidBodyTag, transf: &Isometry3<f32>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -242,8 +235,8 @@ where
         }
     }
 
-    fn body_transform(&self, body_tag: PhysicsBodyTag) -> Isometry3<f32> {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn body_transform(&self, body_tag: PhysicsRigidBodyTag) -> Isometry3<f32> {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_r();
 
         if let Some(body) = bodies.get_body(body_key) {
@@ -256,8 +249,8 @@ where
         Isometry3::identity()
     }
 
-    fn clear_forces(&self, body_tag: PhysicsBodyTag) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn clear_forces(&self, body_tag: PhysicsRigidBodyTag) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -265,8 +258,8 @@ where
         }
     }
 
-    fn apply_force(&self, body_tag: PhysicsBodyTag, force: &Vector3<N>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn apply_force(&self, body_tag: PhysicsRigidBodyTag, force: &Vector3<N>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -275,8 +268,8 @@ where
         }
     }
 
-    fn apply_torque(&self, body_tag: PhysicsBodyTag, force: &Vector3<N>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn apply_torque(&self, body_tag: PhysicsRigidBodyTag, force: &Vector3<N>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -287,11 +280,11 @@ where
 
     fn apply_force_at_position(
         &self,
-        body_tag: PhysicsBodyTag,
+        body_tag: PhysicsRigidBodyTag,
         force: &Vector3<N>,
         position: &Vector3<N>,
     ) {
-        let body_key = tag_to_store_key(body_tag.0);
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -305,8 +298,8 @@ where
         }
     }
 
-    fn apply_impulse(&self, body_tag: PhysicsBodyTag, impulse: &Vector3<N>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn apply_impulse(&self, body_tag: PhysicsRigidBodyTag, impulse: &Vector3<N>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -315,8 +308,8 @@ where
         }
     }
 
-    fn apply_angular_impulse(&self, body_tag: PhysicsBodyTag, impulse: &Vector3<N>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn apply_angular_impulse(&self, body_tag: PhysicsRigidBodyTag, impulse: &Vector3<N>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -327,11 +320,11 @@ where
 
     fn apply_impulse_at_position(
         &self,
-        body_tag: PhysicsBodyTag,
+        body_tag: PhysicsRigidBodyTag,
         impulse: &Vector3<N>,
         position: &Vector3<N>,
     ) {
-        let body_key = tag_to_store_key(body_tag.0);
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -345,8 +338,8 @@ where
         }
     }
 
-    fn set_linear_velocity(&self, body_tag: PhysicsBodyTag, velocity: &Vector3<N>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn set_linear_velocity(&self, body_tag: PhysicsRigidBodyTag, velocity: &Vector3<N>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -358,8 +351,8 @@ where
         }
     }
 
-    fn linear_velocity(&self, body_tag: PhysicsBodyTag) -> Vector3<N> {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn linear_velocity(&self, body_tag: PhysicsRigidBodyTag) -> Vector3<N> {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_r();
 
         if let Some(body) = bodies.get_body(body_key) {
@@ -372,8 +365,8 @@ where
         Vector3::zeros()
     }
 
-    fn set_angular_velocity(&self, body_tag: PhysicsBodyTag, velocity: &Vector3<N>) {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn set_angular_velocity(&self, body_tag: PhysicsRigidBodyTag, velocity: &Vector3<N>) {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_w();
 
         if let Some(body) = bodies.get_body_mut(body_key) {
@@ -385,8 +378,8 @@ where
         }
     }
 
-    fn angular_velocity(&self, body_tag: PhysicsBodyTag) -> Vector3<N> {
-        let body_key = tag_to_store_key(body_tag.0);
+    fn angular_velocity(&self, body_tag: PhysicsRigidBodyTag) -> Vector3<N> {
+        let body_key = rigid_tag_to_store_key(body_tag);
         let mut bodies = self.storages.bodies_r();
 
         if let Some(body) = bodies.get_body(body_key) {

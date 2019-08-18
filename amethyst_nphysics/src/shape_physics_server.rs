@@ -26,7 +26,7 @@ impl<N: PtReal> ShapeNpServer<N> {
         shape_tag: PhysicsShapeTag,
         shapes_storage: &mut ShapesStorageWrite<N>,
     ) -> bool {
-        let shape_key = tag_to_store_key(shape_tag.0);
+        let shape_key = shape_tag_to_store_key(shape_tag);
 
         let safe_to_drop = !ShapeNpServer::has_dependency(shape_key, shapes_storage);
 
@@ -61,15 +61,12 @@ impl<N: PtReal> ShapePhysicsServerTrait<N> for ShapeNpServer<N> {
         let shape = Box::new(RigidShape::new(shape_desc));
 
         let mut shapes_storage = self.storages.shapes_w();
-        let mut shape_key = (shapes_storage.insert(shape));
+        let mut shape_key = shapes_storage.insert(shape);
 
         let shape = shapes_storage.get_mut(shape_key).unwrap();
         shape.self_key = Some(shape_key);
 
-        PhysicsHandle::new(
-            PhysicsShapeTag(store_key_to_tag(shape_key)),
-            self.storages.gc.clone(),
-        )
+        PhysicsHandle::new(store_key_to_shape_tag(shape_key), self.storages.gc.clone())
     }
 
     fn update_shape(&self, shape_tag: PhysicsShapeTag, shape_desc: &ShapeDesc<N>) {
@@ -77,7 +74,7 @@ impl<N: PtReal> ShapePhysicsServerTrait<N> for ShapeNpServer<N> {
         let mut colliders = self.storages.colliders_w();
         let mut shapes = self.storages.shapes_w();
 
-        let shape_key = tag_to_store_key(shape_tag.0);
+        let shape_key = shape_tag_to_store_key(shape_tag);
         if let Some(shape) = shapes.get_mut(shape_key) {
             shape.update(shape_desc);
 

@@ -1,8 +1,7 @@
 use amethyst_phythyst::{objects::*, servers::ShapeDesc, PtReal};
-use nalgebra::{convert, RealField, Unit, Vector3};
+use nalgebra::{convert, Unit, Vector3};
 use ncollide3d::shape::{
-    Ball as NcBall, Cuboid as NcCuboid, Cylinder as NcCylinder, Plane as NcPlane,
-    ShapeHandle as NcShapeHandle,
+    Ball as NcBall, Cuboid as NcCuboid, Plane as NcPlane, ShapeHandle as NcShapeHandle,
 };
 
 use crate::storage::StoreKey;

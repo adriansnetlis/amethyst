@@ -24,7 +24,7 @@ impl<N: crate::PtReal> Default for PhysicsSyncShapeSystem<N> {
 impl<'a, N: crate::PtReal> System<'a> for PhysicsSyncShapeSystem<N> {
     type SystemData = (
         ReadExpect<'a, PhysicsWorld<N>>,
-        ReadStorage<'a, PhysicsHandle<PhysicsBodyTag>>,
+        ReadStorage<'a, PhysicsHandle<PhysicsRigidBodyTag>>,
         ReadStorage<'a, PhysicsHandle<PhysicsShapeTag>>,
     );
 
@@ -71,7 +71,7 @@ impl<'a, N: crate::PtReal> System<'a> for PhysicsSyncShapeSystem<N> {
 
     fn setup(&mut self, res: &mut World) {
         {
-            let mut storage: WriteStorage<PhysicsHandle<PhysicsBodyTag>> = SystemData::fetch(&res);
+            let mut storage: WriteStorage<PhysicsHandle<PhysicsRigidBodyTag>> = SystemData::fetch(&res);
             self.bodies_event_reader = Some(storage.register_reader());
         }
         {

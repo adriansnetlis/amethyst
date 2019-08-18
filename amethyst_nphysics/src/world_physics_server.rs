@@ -5,13 +5,9 @@ use amethyst_phythyst::{
     servers::{OverlapEvent, WorldPhysicsServerTrait},
     PtReal,
 };
-use core::borrow::BorrowMut;
 use nalgebra::Vector3;
 use ncollide3d::query::Proximity;
-use nphysics3d::{
-    utils::UserData as NpUserData,
-    world::{GeometricalWorld, MechanicalWorld},
-};
+use nphysics3d::world::{GeometricalWorld, MechanicalWorld};
 
 use crate::{
     body::BodyData,
@@ -175,13 +171,13 @@ impl<N: PtReal> WorldNpServer<N> {
                     if status == 0 {
                         // Enter
                         e.push(OverlapEvent::Enter(
-                            PhysicsBodyTag(store_key_to_tag(body_key)),
+                            store_key_to_rigid_tag(body_key),
                             body_entity,
                         ));
                     } else {
                         // Exit
                         e.push(OverlapEvent::Exit(
-                            PhysicsBodyTag(store_key_to_tag(body_key)),
+                            store_key_to_rigid_tag(body_key),
                             body_entity,
                         ));
                     }
