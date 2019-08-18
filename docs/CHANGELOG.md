@@ -22,12 +22,15 @@ The format is based on [Keep a Changelog][kc], and this project adheres to
 * Add `DispatcherOperation` to store dispatcher build logic, which can be executed lazily. ([#1870])
 * `AmethystApplication` takes in `SystemDesc`s through `with_system_desc`. ([#1882])
 * `AmethystApplication::with_thread_local_desc` takes in `RunNowDesc`. ([#1882])
+* `RenderingBundle` for full manual control of the rendering pipeline via a custom `GraphCreator` ([#1839]).
 
 ### Changed
 
 * All `-Builder` structs in amethyst_ui/prefab.rs are now called `-Data`. ([#1859])
 * `AmethystApplication` takes in a `System` instead of a closure for `with_system`. ([#1882])
 * `AmethystApplication::with_thread_local` constraint relaxed to `RunNow` (previously `System`). ([#1882])
+* `TextureProcessor` renamed to `TextureProcessorSystem` ([#1839]).
+* `MeshProcessor` renamed to `MeshProcessorSystem` ([#1839]).
 
 ### Fixed
 
@@ -39,6 +42,7 @@ The format is based on [Keep a Changelog][kc], and this project adheres to
 [#1870]: https://github.com/amethyst/amethyst/pull/1870
 [#1881]: https://github.com/amethyst/amethyst/pull/1881
 [#1882]: https://github.com/amethyst/amethyst/pull/1882
+[#1839]: https://github.com/amethyst/amethyst/pull/1839
 
 ## [0.12.0] - 2019-07-30
 
