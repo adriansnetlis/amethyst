@@ -20,27 +20,27 @@ macro_rules! define_opaque_object {
 
         impl $what {
             pub unsafe fn new_u32(a: u32) -> Self {
-                Self::U32(a)
+                $what::U32(a)
             }
 
             pub unsafe fn new_u64(a: u64) -> Self {
-                Self::U64(a)
+                $what::U64(a)
             }
 
             pub unsafe fn new_u32u32(a: u32, b: u32) -> Self {
-                Self::U32U32(a, b)
+                $what::U32U32(a, b)
             }
 
             pub unsafe fn new_u64u64(a: u64, b: u64) -> Self {
-                Self::U64U64(a, b)
+                $what::U64U64(a, b)
             }
 
             pub unsafe fn new_usizeu32(a: usize, b: u32) -> Self {
-                Self::UsizeU32(a, b)
+                $what::UsizeU32(a, b)
             }
 
             pub unsafe fn new_usizeu64(a: usize, b: u64) -> Self {
-                Self::UsizeU64(a, b)
+                $what::UsizeU64(a, b)
             }
         }
 
