@@ -71,7 +71,8 @@ impl<'a, N: crate::PtReal> System<'a> for PhysicsSyncShapeSystem<N> {
 
     fn setup(&mut self, res: &mut World) {
         {
-            let mut storage: WriteStorage<PhysicsHandle<PhysicsRigidBodyTag>> = SystemData::fetch(&res);
+            let mut storage: WriteStorage<PhysicsHandle<PhysicsRigidBodyTag>> =
+                SystemData::fetch(&res);
             self.bodies_event_reader = Some(storage.register_reader());
         }
         {

@@ -179,7 +179,8 @@ impl<'a, N: crate::PtReal> System<'a> for PhysicsSyncTransformSystem<N> {
             self.transf_event_reader = Some(storage.register_reader());
         }
         {
-            let mut storage: WriteStorage<PhysicsHandle<PhysicsRigidBodyTag>> = SystemData::fetch(&res);
+            let mut storage: WriteStorage<PhysicsHandle<PhysicsRigidBodyTag>> =
+                SystemData::fetch(&res);
             self.rigid_bodies_event_reader = Some(storage.register_reader());
         }
         {

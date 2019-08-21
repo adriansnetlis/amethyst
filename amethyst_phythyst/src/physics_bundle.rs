@@ -1,7 +1,7 @@
 use amethyst_core::{
-    bundle::SystemBundle,
     deferred_dispatcher_operation::*,
     ecs::{DispatcherBuilder, ReadStorage, System, SystemData, World},
+    SystemBundle, SystemDesc,
 };
 use amethyst_error::Error;
 use log::info;
@@ -136,9 +136,9 @@ pub struct PhysicsBundle<'a, 'b, N: crate::PtReal, B: crate::PhysicsBackend<N>> 
 }
 
 macro_rules! define_setters{
-    ($(#[$doc:meta])* $with:ident, $add:ident, $vec:ident) => {
-        $(#[$doc])*
-        pub fn $with<S>(
+    ($(#[$doc_sy:meta])* $with_system:ident, $add_system:ident, $(#[$doc_sd:meta])* $with_system_desc:ident, $add_system_desc:ident, $(#[$doc_bund:meta])* $with_bundle:ident, $add_bundle:ident, $(#[$doc_bar:meta])* $with_barrier:ident, $add_barrier:ident, $vec:ident) => {
+        $(#[$doc_sy])*
+        pub fn $with_system<S>(
             mut self,
             system: S,
             name: &'static str,
@@ -147,12 +147,12 @@ macro_rules! define_setters{
         where
             S: for<'c> System<'c> + 'static + Send,
         {
-            self.add_pre_physics(system, name, dependencies);
+            self.$add_system(system, name, dependencies);
             self
         }
 
-        $(#[$doc])*
-        pub fn $add<S>(
+        $(#[$doc_sy])*
+        pub fn $add_system<S>(
             &mut self,
             system: S,
             name: &'static str,
@@ -166,6 +166,81 @@ macro_rules! define_setters{
                     name,
                     dependencies,
                 }) as Box<dyn DispatcherOperation<'a, 'b>>);
+        }
+
+        $(#[$doc_sd])*
+        pub fn $with_system_desc<SD, S>(
+            mut self,
+            system_desc: SD,
+            name: &'static str,
+            dependencies: &'static [&'static str],
+        ) -> Self
+        where
+            SD: SystemDesc<'a, 'b, S> + 'static,
+            S: for<'s> System<'s> + 'static + Send,
+        {
+            self.$add_system_desc(system_desc, name, depenencies);
+            self
+        }
+
+        $(#[$doc_sd])*
+        pub fn $add_system_desc<SD, S>(
+            &mut self,
+            system_desc: SD,
+            name: &'static str,
+            dependencies: &'static [&'static str],
+        ) where
+            SD: SystemDesc<'a, 'b, S> + 'static,
+            S: for<'s> System<'s> + 'static + Send,
+        {
+            self.$vec
+                .push(Box::new(AddSystemDesc::<S>{
+                    system_desc,
+                    name,
+                    dependencies,
+                    marker: std::marker::PhantomData::<S>,
+                }) as Box<dyn DispatcherOperation<'a, 'b>>);
+        }
+
+        $(#[$doc_bund])*
+        pub fn $with_bundle<B>(
+            mut self,
+            bundle: B,
+        ) -> Self
+        where
+            B: SystemBundle<'a, 'b> + 'static + Send,
+        {
+            self.$add_bundle(bundle);
+            self
+        }
+
+        $(#[$doc_bund])*
+        pub fn $add_bundle<B>(
+            &mut self,
+            bundle: B,
+        ) where
+            B: SystemBundle<'a, 'b> + 'static + Send,
+        {
+            self.$vec
+                .push(Box::new(AddBundle {
+                    bundle,
+                }) as Box<dyn DispatcherOperation<'a, 'b>>);
+        }
+
+        $(#[$doc_bar])*
+        pub fn $with_barrier(
+            mut self,
+        ) -> Self {
+            self.add_barrier();
+            self
+        }
+
+        $(#[$doc_bar])*
+        pub fn $add_barrier(
+            &mut self,
+        ){
+            self.$vec
+                .push(Box::new(AddBarrier {}) as Box<dyn DispatcherOperation<'a, 'b>>);
         }
     }
 }
@@ -237,6 +312,24 @@ impl<'a, 'b, N: crate::PtReal, B: crate::PhysicsBackend<N>> PhysicsBundle<'a, 'b
         /// want to control the physics (like add force, set transform).
         with_pre_physics,
         add_pre_physics,
+        /// Add a `SystemDesc` to the **Pre physics** pipeline.
+        ///
+        /// This pipeline is executed before the physics step. Register here all the `System`s that
+        /// want to control the physics (like add force, set transform).
+        with_system_desc_pre_physics,
+        add_system_desc_pre_physics,
+        /// Add a `Bundle` to the **Pre physics** pipeline.
+        ///
+        /// This pipeline is executed before the physics step. Register here all the `System`s that
+        /// want to control the physics (like add force, set transform).
+        with_bundle_pre_physics,
+        add_bundle_pre_physics,
+        /// Add a `Barrier` to the **Pre physics** pipeline.
+        ///
+        /// This pipeline is executed before the physics step. Register here all the `System`s that
+        /// want to control the physics (like add force, set transform).
+        with_barrier_pre_physics,
+        add_barrier_pre_physics,
         pre_physics_dispatcher_operations
     );
 
@@ -248,6 +341,27 @@ impl<'a, 'b, N: crate::PtReal, B: crate::PhysicsBackend<N>> PhysicsBundle<'a, 'b
         /// executed each physics frame.
         with_in_physics,
         add_in_physics,
+        /// Add a `SystemDesc` to the **In physics** pipeline.
+        ///
+        /// This pipeline is executed along the physics step.
+        /// Register here all the `System`s that doesn't interact with the physics, but need to be
+        /// executed each physics frame.
+        with_system_desc_in_physics,
+        add_system_desc_in_physics,
+        /// Add a `Bundle` to the **In physics** pipeline.
+        ///
+        /// This pipeline is executed along the physics step.
+        /// Register here all the `System`s that doesn't interact with the physics, but need to be
+        /// executed each physics frame.
+        with_bundle_in_physics,
+        add_bundle_in_physics,
+        /// Add a `Barrier` to the **In physics** pipeline.
+        ///
+        /// This pipeline is executed along the physics step.
+        /// Register here all the `System`s that doesn't interact with the physics, but need to be
+        /// executed each physics frame.
+        with_barrier_in_physics,
+        add_barrier_in_physics,
         in_physics_dispatcher_operations
     );
 
@@ -258,6 +372,24 @@ impl<'a, 'b, N: crate::PtReal, B: crate::PhysicsBackend<N>> PhysicsBundle<'a, 'b
         /// fetch the physics events.
         with_post_physics,
         add_post_physics,
+        /// Add a `SystemDesc` to the **Post physics** pipeline.
+        ///
+        /// This pipeline is executed after the physics step. Register here all the `System`s that
+        /// fetch the physics events.
+        with_system_desc_post_physics,
+        add_system_desc_post_physics,
+        /// Add a `Bundle` to the **Post physics** pipeline.
+        ///
+        /// This pipeline is executed after the physics step. Register here all the `System`s that
+        /// fetch the physics events.
+        with_bundle_post_physics,
+        add_bundle_post_physics,
+        /// Add a `Barrier` to the **Post physics** pipeline.
+        ///
+        /// This pipeline is executed after the physics step. Register here all the `System`s that
+        /// fetch the physics events.
+        with_barrier_post_physics,
+        add_barrier_post_physics,
         post_physics_dispatcher_operations
     );
 }
