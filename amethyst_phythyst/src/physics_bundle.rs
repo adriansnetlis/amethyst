@@ -194,7 +194,7 @@ macro_rules! define_setters{
             S: for<'s> System<'s> + 'static + Send,
         {
             self.$vec
-                .push(Box::new(AddSystemDesc::<S>{
+                .push(Box::new(AddSystemDesc::<SD, S>{
                     system_desc,
                     name,
                     dependencies,
@@ -203,23 +203,23 @@ macro_rules! define_setters{
         }
 
         $(#[$doc_bund])*
-        pub fn $with_bundle<B>(
+        pub fn $with_bundle<BUND>(
             mut self,
-            bundle: B,
+            bundle: BUND,
         ) -> Self
         where
-            B: SystemBundle<'a, 'b> + 'static + Send,
+            BUND: SystemBundle<'a, 'b> + 'static + Send,
         {
             self.$add_bundle(bundle);
             self
         }
 
         $(#[$doc_bund])*
-        pub fn $add_bundle<B>(
+        pub fn $add_bundle<BUND>(
             &mut self,
-            bundle: B,
+            bundle: BUND,
         ) where
-            B: SystemBundle<'a, 'b> + 'static + Send,
+            BUND: SystemBundle<'a, 'b> + 'static + Send,
         {
             self.$vec
                 .push(Box::new(AddBundle {
@@ -231,7 +231,7 @@ macro_rules! define_setters{
         pub fn $with_barrier(
             mut self,
         ) -> Self {
-            self.add_barrier();
+            self.$add_barrier();
             self
         }
 
