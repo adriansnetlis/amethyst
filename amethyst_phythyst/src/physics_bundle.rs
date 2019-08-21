@@ -179,7 +179,7 @@ macro_rules! define_setters{
             SD: SystemDesc<'a, 'b, S> + 'static,
             S: for<'s> System<'s> + 'static + Send,
         {
-            self.$add_system_desc(system_desc, name, depenencies);
+            self.$add_system_desc(system_desc, name, dependencies);
             self
         }
 
